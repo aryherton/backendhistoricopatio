@@ -29,6 +29,26 @@ const find = async (collection, query) =>
       .catch(console.warn);
   });
 
+const paginatedFind = async (collection, page, limit, query) =>
+  new Promise((resolve, rejects) => {
+    mongoOpen
+      .then((dbMongo) => {
+        dbMongo
+          .collection(collection)
+          .find(query ? query : {})
+          .limit(limit)
+          .skip(page * limit)
+          .toArray()
+          .then((result) => {
+            resolve(result);
+          })
+          .catch(async (error) => {
+            rejects(error);
+          });
+      })
+      .catch(console.warn);
+  });
+
 const findOne = async (collection, query) =>
   new Promise((resolve, rejects) => {
     mongoOpen
@@ -38,7 +58,7 @@ const findOne = async (collection, query) =>
           .find(query)
           .sort({ _id: -1 })
           .limit(1)
-          .toArray()
+          .s.toArray()
           .then((result) => {
             resolve(result);
           })
@@ -105,4 +125,4 @@ const deleteOne = async (collection, query) =>
       .catch(console.warn);
   });
 
-export default { insertOne, find, update, findOne, deleteOne };
+export default { insertOne, find, paginatedFind, update, findOne, deleteOne };

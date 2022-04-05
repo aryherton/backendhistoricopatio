@@ -4,8 +4,17 @@ import sqlServer from "../database/sqlServer.js";
 class HistoricoService {
   async findHistory(query) {
     let arrHistory = [];
-    const { dataInicio, dataFim, cliente, operacao, codAlvo, placa, sm } =
-      query;
+    const {
+      dataInicio,
+      dataFim,
+      cliente,
+      codOperacao,
+      codAlvo,
+      placa,
+      sm,
+      page,
+      limit,
+    } = query;
 
     const initialDate = dataInicio
       ? new Date(
@@ -24,30 +33,45 @@ class HistoricoService {
         )
       : "";
 
-    let history = await mongoDb.find("client_alvos_vehicle_histories", {
-      $and: [
-        placa !== "" ? { plate: { $regex: placa } } : {},
-        sm == "true" ? { cod_sm: { $exists: true, $not: { $lte: 0 } } } : {},
-        codAlvo !== "" ? { cod_alvo: parseInt(codAlvo) } : {},
-        { date_end_alvo: { $ne: null } },
-        dataInicio !== "" && dataFim !== ""
-          ? {
-              date_init_alvo: {
-                $gte: new Date(initialDate),
-                $lte: new Date(finalDate),
-              },
-            }
-          : {},
-      ],
-    });
+    let history = await mongoDb.paginatedFind(
+      "client_alvos_vehicle_histories",
+      Number(page),
+      Number(limit),
+      {
+        $and: [
+          placa !== "" ? { plate: { $regex: placa } } : {},
+          sm == "true" ? { cod_sm: { $exists: true, $not: { $lte: 0 } } } : {},
+          codAlvo !== "" ? { cod_alvo: parseInt(codAlvo) } : {},
+          { date_end_alvo: { $ne: null } },
+          codOperacao !== "" ? { cod_op: parseInt(codOperacao) } : {},
+          dataInicio !== "" && dataFim !== ""
+            ? {
+                date_init_alvo: {
+                  $gte: new Date(initialDate),
+                  $lte: new Date(finalDate),
+                },
+              }
+            : {},
+        ],
+      }
+    );
 
     const getTimeInAlvo = (params) => {
       if (params) {
         let toHours = (params / 60).toFixed(2);
         let hours = toHours.toString().split(".")[0];
+        if (hours < 10) {
+          hours = `0${hours}`;
+        }
         let minutes = (toHours.toString().split(".")[1] * 60)
           .toString()
           .substring(0, 2);
+        if (minutes >= 60) {
+          minutes = `0${minutes.substring(0, 1)}`;
+        }
+        if (minutes == 0) {
+          minutes = "00";
+        }
 
         return `${hours}:${minutes}`;
       }
@@ -55,17 +79,12 @@ class HistoricoService {
     };
 
     for (const hist of history) {
-      let alvo = await sqlServer.select(
-        `SELECT ALV_NOME FROM ALVO WHERE ALV_CODIGO = ${hist.cod_alvo}`
-      );
-      alvo = alvo.length > 0 ? alvo[0].ALV_NOME : "ND";
-
       arrHistory.push({
         placa: hist.plate,
-        frota: hist.plate,
-        operacao: "ND",
+        frota: hist.num_frota ?? "-",
+        operacao: hist.cod_op ?? "-",
         codAlvo: hist.cod_alvo,
-        alvo: alvo,
+        alvo: hist.alv_nome,
         entradaAlvo: hist.date_init_alvo,
         saidaAlvo: hist.date_end_alvo,
         tempoEmAlvo: getTimeInAlvo(hist.time_in_alvo),
@@ -75,8 +94,8 @@ class HistoricoService {
         tipoParada: hist.type,
         carreta: hist.plate,
         motorista: "JOAO DA SILVA",
-        origem: "ORIGEM",
-        destino: "DESTINO",
+        origem: hist.cod_sm ? hist.alvo_origem.alv_nome : "-",
+        destino: hist.cod_sm ? hist.alvo_destino.alv_nome : "-",
       });
     }
 
