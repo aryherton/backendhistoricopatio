@@ -1,5 +1,4 @@
 import mongoDb from "../database/mongoDb.js";
-import sqlServer from "../database/sqlServer.js";
 
 class HistoricoService {
   async findHistory(query) {
@@ -41,9 +40,9 @@ class HistoricoService {
         $and: [
           placa !== "" ? { plate: { $regex: placa } } : {},
           sm == "true" ? { cod_sm: { $exists: true, $not: { $lte: 0 } } } : {},
-          codAlvo !== "" ? { cod_alvo: parseInt(codAlvo) } : {},
+          codAlvo !== "" ? { cod_alvo: Number(codAlvo) } : {},
           { date_end_alvo: { $ne: null } },
-          codOperacao !== "" ? { cod_op: parseInt(codOperacao) } : {},
+          codOperacao !== "" ? { cod_op: Number(codOperacao) } : {},
           dataInicio !== "" && dataFim !== ""
             ? {
                 date_init_alvo: {
@@ -80,22 +79,22 @@ class HistoricoService {
 
     for (const hist of history) {
       arrHistory.push({
-        placa: hist.plate,
-        frota: hist.num_frota ?? "-",
-        operacao: hist.cod_op ?? "-",
-        codAlvo: hist.cod_alvo,
-        alvo: hist.alv_nome,
-        entradaAlvo: hist.date_init_alvo,
-        saidaAlvo: hist.date_end_alvo,
-        tempoEmAlvo: getTimeInAlvo(hist.time_in_alvo),
+        placa: hist?.plate ?? "-",
+        frota: hist?.num_frota ?? "-",
+        operacao: hist?.cod_op ?? "-",
+        codAlvo: hist?.cod_alvo ?? "-",
+        alvo: hist?.alv_nome ?? "-",
+        entradaAlvo: hist?.date_init_alvo ?? "-",
+        saidaAlvo: hist?.date_end_alvo ?? "-",
+        tempoEmAlvo: getTimeInAlvo(hist?.time_in_alvo),
         tempoLimiteAlvo: "00:00",
         tempoExcedido: "00:00",
-        sm: hist.cod_sm,
-        tipoParada: hist.type,
-        carreta: hist.plate,
+        sm: hist?.cod_sm ?? "-",
+        tipoParada: hist?.type ?? "-",
+        carreta: hist?.plate ?? "-",
         motorista: "JOAO DA SILVA",
-        origem: hist.cod_sm ? hist.alvo_origem.alv_nome : "-",
-        destino: hist.cod_sm ? hist.alvo_destino.alv_nome : "-",
+        origem: hist?.cod_sm ? hist?.alvo_origem?.alv_nome ?? "-" : "-",
+        destino: hist?.cod_sm ? hist?.alvo_destino?.alv_nome ?? "-" : "-",
       });
     }
 
