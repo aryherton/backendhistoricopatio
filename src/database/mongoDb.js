@@ -37,7 +37,7 @@ const paginatedFind = async (collection, page, limit, query) =>
           .collection(collection)
           .find(query ? query : {})
           .limit(limit)
-          .skip(page * limit)
+          .skip(page > 1 ? page * limit : 0)
           .toArray()
           .then((result) => {
             resolve(result);

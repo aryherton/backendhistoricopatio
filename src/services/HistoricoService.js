@@ -57,24 +57,49 @@ class HistoricoService {
 
     const getTimeInAlvo = (params) => {
       if (params) {
-        let toHours = (params / 60).toFixed(2);
-        let hours = toHours.toString().split(".")[0];
-        if (hours < 10) {
-          hours = `0${hours}`;
-        }
-        let minutes = (toHours.toString().split(".")[1] * 60)
-          .toString()
-          .substring(0, 2);
-        if (minutes >= 60) {
-          minutes = `0${minutes.substring(0, 1)}`;
-        }
-        if (minutes == 0) {
-          minutes = "00";
-        }
+        if (params >= 60) {
+          let toHours = (params / 60).toFixed(2);
+          let hours = toHours.toString().split(".")[0];
+          if (hours < 10) {
+            hours = `0${hours}`;
+          }
+          let minutes = (toHours.toString().split(".")[1] * 60)
+            .toString()
+            .substring(0, 2);
+          if (minutes >= 60) {
+            minutes = `0${minutes.substring(0, 1)}`;
+          }
+          if (minutes == 0) {
+            minutes = "00";
+          }
 
-        return `${hours}:${minutes}`;
+          return `${hours}:${minutes}`;
+        } else {
+          if (params > 9 && params < 60) {
+            return `00:${parseInt(params)}`;
+          } else if (params < 10 && params < 60) {
+            return `00:0${parseInt(params)}`;
+          }
+        }
       }
-      return "";
+      return "-";
+    };
+
+    const getExceededTime = (params) => {
+      if (params?.time_in_alvo && params?.alv_tempo_parada) {
+        let tempoEmAlvo = Number(params.time_in_alvo);
+        let tempoLimiteAlvo = Number(params.alv_tempo_parada);
+        let tempoExcedido =
+          tempoLimiteAlvo - Math.abs(tempoLimiteAlvo - tempoEmAlvo);
+        if (tempoExcedido > tempoLimiteAlvo) {
+          tempoExcedido = getTimeInAlvo(tempoExcedido);
+          return tempoExcedido;
+        } else {
+          return "00:00";
+        }
+      } else {
+        return "00:00";
+      }
     };
 
     for (const hist of history) {
@@ -87,8 +112,10 @@ class HistoricoService {
         entradaAlvo: hist?.date_init_alvo ?? "-",
         saidaAlvo: hist?.date_end_alvo ?? "-",
         tempoEmAlvo: getTimeInAlvo(hist?.time_in_alvo),
-        tempoLimiteAlvo: "00:00",
-        tempoExcedido: "00:00",
+        tempoLimiteAlvo: hist?.alv_tempo_parada
+          ? getTimeInAlvo(hist?.alv_tempo_parada)
+          : "00:00",
+        tempoExcedido: getExceededTime(hist),
         sm: hist?.cod_sm ?? "-",
         tipoParada: hist?.type ?? "-",
         carreta: hist?.plate ?? "-",
