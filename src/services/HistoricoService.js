@@ -138,7 +138,7 @@ class HistoricoService {
         sm: hist?.cod_sm ?? "-",
         tipoParada: hist?.type ?? "-",
         carreta: hist?.plate ?? "-",
-        motorista: "JOAO DA SILVA",
+        motorista: hist?.motorista ?? "-",
         origem: hist?.cod_sm ? hist?.alvo_origem?.alv_nome ?? "-" : "-",
         destino: hist?.cod_sm ? hist?.alvo_destino?.alv_nome ?? "-" : "-",
       });
