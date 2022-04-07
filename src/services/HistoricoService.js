@@ -1,12 +1,12 @@
 import mongoDb from "../database/mongoDb.js";
-
+import sqlServer from "../database/sqlServer.js";
 class HistoricoService {
   async findHistory(query) {
     let arrHistory = [];
     const {
       dataInicio,
       dataFim,
-      cliente,
+      codCliente,
       codOperacao,
       codAlvo,
       placa,
@@ -32,6 +32,18 @@ class HistoricoService {
         )
       : "";
 
+    const operacoes =
+      codCliente && !codOperacao
+        ? await sqlServer.select("SELECT OPE_CODIGO, OPE_CODCLN FROM OPERACAO")
+        : "";
+
+    const clientes =
+      codCliente && !codOperacao
+        ? operacoes.filter((item) => {
+            return Number(item.OPE_CODCLN) == Number(codCliente);
+          })
+        : "";
+
     let history = await mongoDb.paginatedFind(
       "client_alvos_vehicle_histories",
       Number(page),
@@ -43,6 +55,13 @@ class HistoricoService {
           codAlvo !== "" ? { cod_alvo: Number(codAlvo) } : {},
           { date_end_alvo: { $ne: null } },
           codOperacao !== "" ? { cod_op: Number(codOperacao) } : {},
+          clientes
+            ? {
+                $or: clientes.map((operacao) => ({
+                  cod_op: Number(operacao.OPE_CODIGO),
+                })),
+              }
+            : {},
           dataInicio !== "" && dataFim !== ""
             ? {
                 date_init_alvo: {
