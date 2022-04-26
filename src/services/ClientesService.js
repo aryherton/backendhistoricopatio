@@ -2,7 +2,7 @@ import sqlServer from "../database/sqlServer.js";
 
 class ClientesService {
   async findClients(query) {
-    const { codUsuario } = query;
+    const { codCliente, codUsuario } = query;
 
     let clientes = await sqlServer.select(
       // `SELECT CLN_NOME, CLN_CODIGO, CLN_NUMERO FROM CLIENTE WHERE CLN_CODUSR = ${codUsuario}`
@@ -15,6 +15,12 @@ class ClientesService {
           nomeCliente: item.DESCRICAO,
         }))
       : [];
+
+    codCliente
+      ? (clientes = clientes.filter((client) => {
+          return Number(client.codCliente) == Number(codCliente);
+        }))
+      : null;
 
     return clientes;
   }
