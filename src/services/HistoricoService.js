@@ -38,7 +38,7 @@ class HistoricoService {
         : "";
 
     const clientes =
-      codCliente && !codOperacao
+      codCliente != 0 && !codOperacao
         ? operacoes.filter((item) => {
             return Number(item.OPE_CODCLN) == Number(codCliente);
           })
