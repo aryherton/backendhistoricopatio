@@ -108,8 +108,7 @@ class HistoricoService {
       if (params?.time_in_alvo && params?.alv_tempo_parada) {
         let tempoEmAlvo = Number(params.time_in_alvo);
         let tempoLimiteAlvo = Number(params.alv_tempo_parada);
-        let tempoExcedido =
-          tempoLimiteAlvo - Math.abs(tempoLimiteAlvo - tempoEmAlvo);
+        let tempoExcedido = Math.abs(tempoLimiteAlvo - tempoEmAlvo);
         if (tempoExcedido > tempoLimiteAlvo) {
           tempoExcedido = getTimeInAlvo(tempoExcedido);
           return tempoExcedido;
