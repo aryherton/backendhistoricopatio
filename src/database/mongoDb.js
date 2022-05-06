@@ -17,7 +17,6 @@ const find = async (collection, query) =>
         dbMongo
           .collection(collection)
           .find(query ? query : {})
-          .limit(100)
           .toArray()
           .then((result) => {
             resolve(result);

@@ -11,8 +11,8 @@ class HistoricoService {
       codAlvo,
       placa,
       sm,
-      page,
-      limit,
+      // page,
+      // limit,
     } = query;
 
     const initialDate = dataInicio
@@ -44,10 +44,10 @@ class HistoricoService {
           })
         : "";
 
-    let history = await mongoDb.paginatedFind(
+    let history = await mongoDb.find(
       "client_alvos_vehicle_histories",
-      Number(page),
-      Number(limit),
+      // Number(page),
+      // Number(limit),
       {
         $and: [
           placa !== "" ? { plate: { $regex: placa } } : {},
