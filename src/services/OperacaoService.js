@@ -6,11 +6,11 @@ class OperacaoService {
     let operacao;
 
     if (codCliente) {
-      operacao = await sqlServer.select(
+      operacao = await sqlServer.selectConnect(
         `SELECT OPE_CODIGO, OPE_NOME, OPE_CODCLN FROM OPERACAO WHERE OPE_CODCLN = ${codCliente}`
       );
     } else {
-      operacao = await sqlServer.select(
+      operacao = await sqlServer.selectConnect(
         "SELECT OPE_CODIGO, OPE_NOME, OPE_CODCLN FROM OPERACAO"
       );
     }

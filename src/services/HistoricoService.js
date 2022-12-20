@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import mongoDb from "../database/mongoDb.js";
 import sqlServer from "../database/sqlServer.js";
 class HistoricoService {
@@ -34,7 +35,7 @@ class HistoricoService {
 
     const operacoes =
       codCliente && !codOperacao
-        ? await sqlServer.select("SELECT OPE_CODIGO, OPE_CODCLN FROM OPERACAO")
+        ? await sqlServer.selectConnect("SELECT OPE_CODIGO, OPE_CODCLN FROM OPERACAO")
         : "";
 
     const clientes =
@@ -54,14 +55,13 @@ class HistoricoService {
           sm == "true" ? { cod_sm: { $exists: true, $not: { $lte: 0 } } } : {},
           codAlvo !== "" ? { cod_alvo: Number(codAlvo) } : {},
           { date_end_alvo: { $ne: null } },
+          { time_in_alvo: { $gte: 10 } },
           codOperacao !== "" ? { cod_op: Number(codOperacao) } : {},
-          clientes
-            ? {
-                $or: clientes.map((operacao) => ({
-                  cod_op: Number(operacao.OPE_CODIGO),
-                })),
-              }
-            : {},
+          codCliente ? {cod_client: Number(codCliente)} : clientes ? {
+            $or: clientes.map((operacao) => ({
+              cod_op: Number(operacao.OPE_CODIGO),
+            })),
+          } : {},
           dataInicio !== "" && dataFim !== ""
             ? {
                 date_init_alvo: {
@@ -121,19 +121,25 @@ class HistoricoService {
     };
 
     for (const hist of history) {
+      let entradaAlvo = hist?.date_init_alvo ? dayjs(hist.date_init_alvo) : '';
+      let saidaAlvo = hist?.date_end_alvo ?? '';
+      let tempoEmAlvo = dayjs(saidaAlvo).diff(entradaAlvo, 'minutes');
+      let tempoLimiteAlvo = hist?.alv_tempo_parada ?? '';
+      let tempoExcedido = tempoEmAlvo > tempoLimiteAlvo ? tempoEmAlvo - tempoLimiteAlvo : 0;
+
       arrHistory.push({
         placa: hist?.plate ?? "-",
         frota: hist?.num_frota ?? "-",
         operacao: hist?.cod_op ?? "-",
         codAlvo: hist?.cod_alvo ?? "-",
         alvo: hist?.alv_nome ?? "-",
-        entradaAlvo: hist?.date_init_alvo ?? "-",
+        entradaAlvo: entradaAlvo,
         saidaAlvo: hist?.date_end_alvo ?? "-",
-        tempoEmAlvo: getTimeInAlvo(hist?.time_in_alvo),
+        tempoEmAlvo: getTimeInAlvo(tempoEmAlvo),
         tempoLimiteAlvo: hist?.alv_tempo_parada
           ? getTimeInAlvo(hist?.alv_tempo_parada)
           : "00:00",
-        tempoExcedido: getExceededTime(hist),
+        tempoExcedido: getTimeInAlvo(tempoExcedido),
         sm: hist?.cod_sm ?? "-",
         tipoParada: hist?.type ?? "-",
         carreta: hist?.plate ?? "-",

@@ -7,15 +7,15 @@ class AlvosService {
     let alvos;
 
     if (codCliente && nomeAlvo) {
-      alvos = await sqlServer.select(
+      alvos = await sqlServer.selectConnect(
         `SELECT TOP (150) * FROM ALVO WHERE ALV_CODCLN = ${codCliente} AND ALV_NOME LIKE '%${nomeAlvo.toUpperCase()}%'`
       );
     } else if (codCliente) {
-      alvos = await sqlServer.select(
+      alvos = await sqlServer.selectConnect(
         `SELECT TOP (150) * FROM ALVO WHERE ALV_CODCLN = ${codCliente}`
       );
     } else {
-      alvos = await sqlServer.select("SELECT TOP (150) * FROM ALVO");
+      alvos = await sqlServer.selectConnect("SELECT TOP (150) * FROM ALVO");
     }
 
     if (alvos) {
