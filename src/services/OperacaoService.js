@@ -3,9 +3,30 @@ import sqlServer from "../database/sqlServer.js";
 class OperacaoService {
   async findOperation(query) {
     const { codCliente } = query;
-    let operacao;
+    let codUsuario = query.codUsuario ?? '';
 
-    if (codCliente) {
+    let usuarioBr = await sqlServer.selectBr(`SELECT USR_CPF AS CPF FROM USUARIO WHERE USR_CODIGO = ${codUsuario}`)
+    let cpfUsuario = '';
+    if (usuarioBr?.length > 0) cpfUsuario = usuarioBr[0].CPF;
+
+    let usuarioConnect = await sqlServer.selectConnect(`SELECT USR_CODIGO AS CODIGO FROM USUARIO WHERE USR_CPF = '${cpfUsuario}'`)
+    if (usuarioConnect?.length > 0) codUsuario = usuarioConnect[0].CODIGO;
+
+    console.log('codUsuario operacao: ', codUsuario);
+
+    let operacao;
+    let operacoesId;
+
+    if (codUsuario) {
+      operacoesId = await sqlServer.selectConnect(
+        `SELECT UO_CODOPE, UO_CODUSR FROM USUARIOOPERACAO WHERE UO_CODUSR = ${codUsuario} AND UO_ATIVO = 'S'`
+      );
+      operacoesId = operacoesId?.map((ope)=> ope.UO_CODOPE);
+      operacao = await sqlServer.selectConnect(
+        "SELECT OPE_CODIGO, OPE_NOME, OPE_CODCLN FROM OPERACAO"
+      );
+      operacao = operacao.filter((ope)=> operacoesId.includes(ope.OPE_CODIGO))
+    } else if (codCliente) {
       operacao = await sqlServer.selectConnect(
         `SELECT OPE_CODIGO, OPE_NOME, OPE_CODCLN FROM OPERACAO WHERE OPE_CODCLN = ${codCliente}`
       );

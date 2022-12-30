@@ -7,10 +7,9 @@ import OperacaoController from "./controllers/OperacaoController.js";
 
 const routes = express.Router();
 
-// Produtos
-routes.get("/historico", HistoricoController.findHistory);
-routes.get("/clientes", ClientesController.findClients);
-routes.get("/operacoes", OperacaoController.findOperation);
-routes.get("/alvos", AlvosController.findTarget);
+routes.get("/historico-patio/clientes", ClientesController.findClients);
+routes.get("/historico-patio/operacoes", OperacaoController.findOperation);
+routes.get("/historico-patio/alvos", AlvosController.findTarget);
+routes.get("/historico-patio/historico", HistoricoController.findHistory);
 
 export default routes;
