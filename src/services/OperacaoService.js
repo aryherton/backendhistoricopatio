@@ -5,14 +5,14 @@ class OperacaoService {
     const { codCliente } = query;
     let codUsuario = query.codUsuario ?? '';
 
-    let usuarioBr = await sqlServer.selectBr(`SELECT USR_CPF AS CPF FROM USUARIO WHERE USR_CODIGO = ${codUsuario}`)
-    let cpfUsuario = '';
-    if (usuarioBr?.length > 0) cpfUsuario = usuarioBr[0].CPF;
-
-    let usuarioConnect = await sqlServer.selectConnect(`SELECT USR_CODIGO AS CODIGO FROM USUARIO WHERE USR_CPF = '${cpfUsuario}'`)
-    if (usuarioConnect?.length > 0) codUsuario = usuarioConnect[0].CODIGO;
-
-    console.log('codUsuario operacao: ', codUsuario);
+    if (codUsuario) {
+      let usuarioBr = await sqlServer.selectBr(`SELECT USR_CPF AS CPF FROM USUARIO WHERE USR_CODIGO = ${codUsuario}`)
+      let cpfUsuario = '';
+      if (usuarioBr?.length > 0) cpfUsuario = usuarioBr[0].CPF;
+  
+      let usuarioConnect = await sqlServer.selectConnect(`SELECT USR_CODIGO AS CODIGO FROM USUARIO WHERE USR_CPF = '${cpfUsuario}'`)
+      if (usuarioConnect?.length > 0) codUsuario = usuarioConnect[0].CODIGO;
+    }
 
     let operacao;
     let operacoesId;
