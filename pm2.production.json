@@ -1,0 +1,9 @@
+{
+  "apps": [
+    {
+      "name": "BackendBIHistorico",
+      "script": "npm",
+      "args": "start"
+    }
+  ]
+}
